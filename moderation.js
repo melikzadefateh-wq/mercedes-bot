@@ -1,86 +1,51 @@
-
-require('dotenv').config();
-const { EmbedBuilder, SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
-
-// Warn veritabanı (index.js ile senkronize kalması için basit bir nesne)
-// Not: Bot kapanınca sıfırlanmaması için ileride bir veritabanı (json vb.) eklenebilir.
-const db = new Map();
-const SIYAH_RENK = 0x000000;
+const { SlashCommandBuilder, PermissionFlagsBits, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 
 module.exports = {
-    // Komutları tanımlayan dizi
     data: [
         new SlashCommandBuilder()
             .setName('ban')
-            .setDescription('Kullanıcıyı Mercedes Garajı\'ndan uzaklaştırır.')
+            .setDescription('Kullanıcıyı banlar.')
             .addUserOption(opt => opt.setName('hedef').setDescription('Banlanacak kişi').setRequired(true))
-            .addStringOption(opt => opt.setName('sebep').setDescription('Sebep').setRequired(true)),
+            .addStringOption(opt => opt.setName('sebep').setDescription('Neden banlanıyor?')),
         new SlashCommandBuilder()
             .setName('kick')
-            .setDescription('Kullanıcıyı garajdan dışarı alır.')
-            .addUserOption(opt => opt.setName('hedef').setDescription('Atılacak kişi').setRequired(true))
-            .addStringOption(opt => opt.setName('sebep').setDescription('Sebep').setRequired(true)),
+            .setDescription('Kullanıcıyı atar.')
+            .addUserOption(opt => opt.setName('hedef').setDescription('Atılacak kişi').setRequired(true)),
         new SlashCommandBuilder()
-            .setName('warn')
-            .setDescription('Kullanıcıya uyarı verir.')
-            .addUserOption(opt => opt.setName('hedef').setDescription('Uyarılacak kişi').setRequired(true))
-            .addStringOption(opt => opt.setName('sebep').setDescription('Sebep').setRequired(true)),
+            .setName('sil')
+            .setDescription('Mesajları temizler.')
+            .addIntegerOption(opt => opt.setName('sayi').setDescription('1-100 arası').setRequired(true))
     ],
 
-    // Komutların çalışma mantığı
     async execute(interaction) {
-        const { commandName, options, guild, user: yetkili } = interaction;
-        const hedef = options.getMember('hedef');
-        const sebep = options.getString('sebep');
-        const tarih = new Date().toLocaleDateString('tr-TR');
-        const saat = new Date().toLocaleTimeString('tr-TR');
+        const { commandName, options, guild } = interaction;
 
-        if (!hedef) return interaction.reply({ content: "Hedef bulunamadı.", ephemeral: true });
-
-        // BAN
         if (commandName === 'ban') {
-            const embed = new EmbedBuilder()
-                .setColor(SIYAH_RENK)
-                .setTitle(`${hedef.user.username} banlandı ★`)
-                .setDescription(`|\n| Sebep: ${sebep}\n| Yetkili: ${yetkili.tag}\n| Tarih: ${tarih} ${saat}\n| User ID: ${hedef.id}\n|`);
+            const user = options.getUser('hedef');
+            const reason = options.getString('sebep') || 'Belirtilmedi';
+            const member = guild.members.cache.get(user.id);
 
-            await interaction.reply({ embeds: [embed] });
-            const row = new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId(`unban_${hedef.id}`).setLabel('Ban Aç').setStyle(ButtonStyle.Danger));
-            guild.channels.cache.get(process.env.BAN_LOG_ID).send({ embeds: [embed], components: [row] });
-            await hedef.ban({ reason: sebep });
+            if (member && !member.bannable) return interaction.reply("❌ Yetkim bu kişiye yetmiyor.");
+            
+            await guild.members.ban(user, { reason });
+            const row = new ActionRowBuilder().addComponents(
+                new ButtonBuilder().setCustomId(`unban_${user.id}`).setLabel('Banı Kaldır').setStyle(ButtonStyle.Danger)
+            );
+            return interaction.reply({ content: `✅ ${user.tag} banlandı.`, components: [row] });
         }
 
-        // KICK
         if (commandName === 'kick') {
-            const embed = new EmbedBuilder()
-                .setColor(SIYAH_RENK)
-                .setTitle(`${hedef.user.username} kicklendi ★`)
-                .setDescription(`|\n| Sebep: ${sebep}\n| Yetkili: ${yetkili.tag}\n| Tarih: ${tarih} ${saat}\n| User ID: ${hedef.id}\n|\n| Geri dönmek için: ${process.env.INVITE_LINK}\n|`);
-
-            await interaction.reply({ embeds: [embed] });
-            guild.channels.cache.get(process.env.KICK_LOG_ID).send({ embeds: [embed] });
-            await hedef.kick(sebep);
+            const user = options.getUser('hedef');
+            const member = guild.members.cache.get(user.id);
+            if (!member || !member.kickable) return interaction.reply("❌ Bu kişiyi atamam.");
+            await member.kick();
+            return interaction.reply(`✅ ${user.tag} sunucudan atıldı.`);
         }
 
-        // WARN
-        if (commandName === 'warn') {
-            let count = (db.get(hedef.id) || 0) + 1;
-            db.set(hedef.id, count);
-
-            if (count >= 3) {
-                await interaction.reply(`${hedef.user} 3/3 uyarıdan dolayı banlandı!`);
-                await hedef.ban({ reason: "3/3 Uyarı" });
-                db.delete(hedef.id);
-            } else {
-                const embed = new EmbedBuilder()
-                    .setColor(SIYAH_RENK)
-                    .setTitle(`${hedef.user.username} uyarı aldı ⚠️`)
-                    .setDescription(`|\n| Seviye: ${count}/3\n| Sebep: ${sebep}\n| Yetkili: ${yetkili.tag}\n| Tarih: ${tarih} ${saat}\n| User ID: ${hedef.id}\n|`);
-
-                await interaction.reply({ embeds: [embed] });
-                const row = new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId(`unwarn_${hedef.id}`).setLabel('Warn Kaldır').setStyle(ButtonStyle.Secondary));
-                guild.channels.cache.get(process.env.WARN_LOG_ID).send({ embeds: [embed], components: [row] });
-            }
+        if (commandName === 'sil') {
+            const miktar = options.getInteger('sayi');
+            await interaction.channel.bulkDelete(miktar, true);
+            return interaction.reply({ content: `✅ ${miktar} mesaj silindi.`, ephemeral: true });
         }
     }
 };
