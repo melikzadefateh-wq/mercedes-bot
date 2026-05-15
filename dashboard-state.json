@@ -1,0 +1,11 @@
+{
+  "guard": {
+    "spam": true,
+    "links": true,
+    "raid": true
+  },
+  "panel": {
+    "theme": "Mercedes Black"
+  },
+  "logs": []
+}

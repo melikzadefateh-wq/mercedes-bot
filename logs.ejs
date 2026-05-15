@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Logs</title>
+    <link rel="stylesheet" href="/style.css" />
+</head>
+<body class="page">
+    <div class="layout">
+        <aside class="sidebar">
+            <div>
+                <div class="brand">
+                    <div class="brand-dot"></div>
+                    <div>
+                        <div class="brand-title">Mercedes Control</div>
+                        <div class="brand-subtitle">Admin Panel</div>
+                    </div>
+                </div>
+
+                <nav class="nav">
+                    <a class="nav-item" href="/dashboard">Dashboard</a>
+                    <a class="nav-item" href="/users">Users</a>
+                    <a class="nav-item active" href="/logs">Logs</a>
+                    <a class="nav-item" href="/guard">Guard</a>
+                    <a class="nav-item" href="/logout">Logout</a>
+                </nav>
+            </div>
+
+            <div class="sidebar-footer">
+                <div class="mini-label">Logged in as</div>
+                <div class="mini-user">
+                    <img class="avatar" src="https://cdn.discordapp.com/embed/avatars/0.png" alt="avatar" />
+                    <div>
+                        <div class="user-name"><%= user.username %></div>
+                        <div class="user-tag">#<%= user.discriminator || "0000" %></div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <main class="content">
+            <header class="topbar">
+                <div>
+                    <h1>Logs</h1>
+                    <p>Son işlem kayıtları</p>
+                </div>
+
+                <div class="topbar-actions">
+                    <button class="btn btn-secondary" id="clearLogsBtn">Logları Temizle</button>
+                    <a class="btn btn-secondary" href="/logout">Çıkış</a>
+                </div>
+            </header>
+
+            <section class="card panel">
+                <div class="panel-header">
+                    <h2>İşlem Kayıtları</h2>
+                    <span class="chip">Live</span>
+                </div>
+
+                <div class="log-list" id="logList">
+                    <% if (!state.logs || state.logs.length === 0) { %>
+                        <div class="empty-state">
+                            <div class="empty-icon">📡</div>
+                            <div class="empty-title">Henüz log bulunmuyor</div>
+                            <div class="empty-text">
+                                Moderasyon işlemleri gerçekleştiğinde burada görüntülenecek.
+                            </div>
+                        </div>
+                    <% } else { %>
+                        <% state.logs.forEach(log => { %>
+                            <div class="log-row">
+                                <span class="log-type <%= log.type === 'warn' ? 'warn' : (log.type === 'kick' ? 'kick' : 'ban') %>">
+                                    <%= log.type.toUpperCase() %>
+                                </span>
+                                <span class="log-text"><%= log.action %> — <%= log.by %></span>
+                                <span class="log-time"><%= log.time %></span>
+                            </div>
+                        <% }) %>
+                    <% } %>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="/app.js"></script>
+</body>
+</html>

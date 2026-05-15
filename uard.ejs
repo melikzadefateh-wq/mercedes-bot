@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Guard</title>
+    <link rel="stylesheet" href="/style.css" />
+</head>
+<body class="page">
+    <div class="layout">
+        <aside class="sidebar">
+            <div>
+                <div class="brand">
+                    <div class="brand-dot"></div>
+                    <div>
+                        <div class="brand-title">Mercedes Control</div>
+                        <div class="brand-subtitle">Admin Panel</div>
+                    </div>
+                </div>
+
+                <nav class="nav">
+                    <a class="nav-item" href="/dashboard">Dashboard</a>
+                    <a class="nav-item" href="/users">Users</a>
+                    <a class="nav-item" href="/logs">Logs</a>
+                    <a class="nav-item active" href="/guard">Guard</a>
+                    <a class="nav-item" href="/logout">Logout</a>
+                </nav>
+            </div>
+
+            <div class="sidebar-footer">
+                <div class="mini-label">Logged in as</div>
+                <div class="mini-user">
+                    <img class="avatar" src="https://cdn.discordapp.com/embed/avatars/0.png" alt="avatar" />
+                    <div>
+                        <div class="user-name"><%= user.username %></div>
+                        <div class="user-tag">#<%= user.discriminator || "0000" %></div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <main class="content">
+            <header class="topbar">
+                <div>
+                    <h1>Guard</h1>
+                    <p>Koruma sistemi ayarları</p>
+                </div>
+
+                <div class="topbar-actions">
+                    <a class="btn btn-secondary" href="/logout">Çıkış</a>
+                </div>
+            </header>
+
+            <section class="two-col">
+                <div class="card panel">
+                    <div class="panel-header">
+                        <h2>Koruma Toggle</h2>
+                        <span class="chip success">Active</span>
+                    </div>
+
+                    <div class="toggle-list">
+                        <div class="toggle-item">
+                            <span>Spam Block</span>
+                            <button class="toggle-state <%= state.guard.spam ? 'on' : '' %>" data-guard="spam">
+                                <%= state.guard.spam ? "ON" : "OFF" %>
+                            </button>
+                        </div>
+
+                        <div class="toggle-item">
+                            <span>Link Block</span>
+                            <button class="toggle-state <%= state.guard.links ? 'on' : '' %>" data-guard="links">
+                                <%= state.guard.links ? "ON" : "OFF" %>
+                            </button>
+                        </div>
+
+                        <div class="toggle-item">
+                            <span>Anti Raid</span>
+                            <button class="toggle-state <%= state.guard.raid ? 'warn' : '' %>" data-guard="raid">
+                                <%= state.guard.raid ? "ARMED" : "OFF" %>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card panel">
+                    <div class="panel-header">
+                        <h2>Tema</h2>
+                        <span class="chip"><%= state.panel.theme %></span>
+                    </div>
+
+                    <div class="search-row">
+                        <input
+                            id="themeInput"
+                            class="input"
+                            type="text"
+                            placeholder="Tema adı"
+                            value="<%= state.panel.theme %>"
+                        />
+                        <button class="btn btn-primary" id="themeBtn">Kaydet</button>
+                    </div>
+
+                    <div class="result-box">
+                        Guard ayarları buradan açılıp kapatılır.
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="/app.js"></script>
+</body>
+</html>

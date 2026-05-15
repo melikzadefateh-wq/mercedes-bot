@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mercedes Control Panel</title>
+    <link rel="stylesheet" href="/style.css" />
+</head>
+<body class="page">
+    <div class="layout">
+        <aside class="sidebar">
+            <div>
+                <div class="brand">
+                    <div class="brand-dot"></div>
+                    <div>
+                        <div class="brand-title">Mercedes Control</div>
+                        <div class="brand-subtitle">Admin Panel</div>
+                    </div>
+                </div>
+
+                <nav class="nav">
+                    <a class="nav-item active" href="/dashboard">Dashboard</a>
+                    <a class="nav-item" href="/users">Users</a>
+                    <a class="nav-item" href="/logs">Logs</a>
+                    <a class="nav-item" href="/guard">Guard</a>
+                    <a class="nav-item" href="/logout">Logout</a>
+                </nav>
+            </div>
+
+            <div class="sidebar-footer">
+                <div class="mini-label">Logged in as</div>
+                <div class="mini-user">
+                    <img class="avatar" src="https://cdn.discordapp.com/embed/avatars/0.png" alt="avatar" />
+                    <div>
+                        <div class="user-name"><%= user.username %></div>
+                        <div class="user-tag">#<%= user.discriminator || "0000" %></div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <main class="content">
+            <header class="topbar">
+                <div>
+                    <h1>Dashboard</h1>
+                    <p>Sunucu yönetimi ve kontrol merkezi</p>
+                </div>
+
+                <div class="topbar-actions">
+                    <a class="btn btn-secondary" href="/logout">Çıkış</a>
+                </div>
+            </header>
+
+            <section class="stats-grid">
+                <div class="card stat-card">
+                    <div class="stat-title">Sistem</div>
+                    <div class="stat-value">Online</div>
+                    <div class="stat-desc">Panel aktif çalışıyor</div>
+                </div>
+
+                <div class="card stat-card">
+                    <div class="stat-title">Moderasyon</div>
+                    <div class="stat-value">Ready</div>
+                    <div class="stat-desc">Ban / kick / warn hazır</div>
+                </div>
+
+                <div class="card stat-card">
+                    <div class="stat-title">Guard</div>
+                    <div class="stat-value">Protected</div>
+                    <div class="stat-desc">Spam ve link kontrolü</div>
+                </div>
+
+                <div class="card stat-card">
+                    <div class="stat-title">Tema</div>
+                    <div class="stat-value"><%= state.panel.theme %></div>
+                    <div class="stat-desc">Panel görünümü</div>
+                </div>
+            </section>
+
+            <section class="card panel">
+                <div class="panel-header">
+                    <h2>Son Loglar</h2>
+                    <span class="chip">Live</span>
+                </div>
+
+                <div class="log-list">
+                    <% if (!state.logs || state.logs.length === 0) { %>
+                        <div class="empty-state">
+                            <div class="empty-icon">📡</div>
+                            <div class="empty-title">Henüz log bulunmuyor</div>
+                            <div class="empty-text">
+                                Moderasyon işlemleri gerçekleştiğinde burada görüntülenecek.
+                            </div>
+                        </div>
+                    <% } else { %>
+                        <% state.logs.slice(0, 5).forEach(log => { %>
+                            <div class="log-row">
+                                <span class="log-type <%= log.type === 'warn' ? 'warn' : (log.type === 'kick' ? 'kick' : 'ban') %>">
+                                    <%= log.type.toUpperCase() %>
+                                </span>
+                                <span class="log-text"><%= log.action %></span>
+                                <span class="log-time"><%= log.time %></span>
+                            </div>
+                        <% }) %>
+                    <% } %>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="/app.js"></script>
+</body>
+</html>

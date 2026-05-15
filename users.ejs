@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Users</title>
+    <link rel="stylesheet" href="/style.css" />
+</head>
+<body class="page">
+    <div class="layout">
+        <aside class="sidebar">
+            <div>
+                <div class="brand">
+                    <div class="brand-dot"></div>
+                    <div>
+                        <div class="brand-title">Mercedes Control</div>
+                        <div class="brand-subtitle">Admin Panel</div>
+                    </div>
+                </div>
+
+                <nav class="nav">
+                    <a class="nav-item" href="/dashboard">Dashboard</a>
+                    <a class="nav-item active" href="/users">Users</a>
+                    <a class="nav-item" href="/logs">Logs</a>
+                    <a class="nav-item" href="/guard">Guard</a>
+                    <a class="nav-item" href="/logout">Logout</a>
+                </nav>
+            </div>
+
+            <div class="sidebar-footer">
+                <div class="mini-label">Logged in as</div>
+                <div class="mini-user">
+                    <img class="avatar" src="https://cdn.discordapp.com/embed/avatars/0.png" alt="avatar" />
+                    <div>
+                        <div class="user-name"><%= user.username %></div>
+                        <div class="user-tag">#<%= user.discriminator || "0000" %></div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <main class="content">
+            <header class="topbar">
+                <div>
+                    <h1>Users</h1>
+                    <p>Kullanıcı arama ve işlem paneli</p>
+                </div>
+
+                <div class="topbar-actions">
+                    <a class="btn btn-secondary" href="/logout">Çıkış</a>
+                </div>
+            </header>
+
+            <section class="two-col">
+                <div class="card panel">
+                    <div class="panel-header">
+                        <h2>Kullanıcı İşlemi</h2>
+                        <span class="chip">Ban / Kick / Warn</span>
+                    </div>
+
+                    <div class="stack">
+                        <input id="targetInput" class="input" type="text" placeholder="Kullanıcı adı veya ID" />
+                        <input id="reasonInput" class="input" type="text" placeholder="Sebep" />
+
+                        <div class="button-row">
+                            <button class="btn btn-primary action-btn" data-action="ban">Ban</button>
+                            <button class="btn btn-secondary action-btn" data-action="kick">Kick</button>
+                            <button class="btn btn-secondary action-btn" data-action="warn">Warn</button>
+                        </div>
+                    </div>
+
+                    <div class="result-box" id="userResult">
+                        İşlem sonucu burada görünecek.
+                    </div>
+                </div>
+
+                <div class="card panel">
+                    <div class="panel-header">
+                        <h2>Arama</h2>
+                        <span class="chip">ID / isim</span>
+                    </div>
+
+                    <div class="search-row">
+                        <input id="searchInput" class="input" type="text" placeholder="Kullanıcı ara" />
+                        <button class="btn btn-primary" id="searchBtn">Ara</button>
+                    </div>
+
+                    <div class="result-box" id="searchResult">
+                        Arama sonucu burada görünecek.
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="/app.js"></script>
+</body>
+</html>

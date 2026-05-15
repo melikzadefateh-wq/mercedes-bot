@@ -1,74 +1,37 @@
-const express = require('express');
-const app = express();
-const port = process.env.PORT || 3000;
+require("dotenv").config();
 
-// Render'ın uyumasını engelleyen servis
-app.get('/', (req, res) => res.send('Mercedes Bot 7/24 Aktif!'));
-app.listen(port, () => console.log(`[SİSTEM] Port ${port} aktif.`));
-
-require('dotenv').config();
-const { Client, GatewayIntentBits, Events, REST, Routes, PermissionFlagsBits, EmbedBuilder } = require('discord.js');
-const moderation = require('./moderation.js');
+const { Client, GatewayIntentBits, Partials } = require("discord.js");
 
 const client = new Client({
     intents: [
         GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMembers,
         GatewayIntentBits.GuildMessages,
-        GatewayIntentBits.MessageContent,
-        GatewayIntentBits.GuildMembers
-    ]
+        GatewayIntentBits.MessageContent
+    ],
+    partials: [Partials.Channel]
 });
 
-// KOMUTLARI DISCORD'A KAYDET
-const rest = new REST({ version: '10' }).setToken(process.env.TOKEN);
-(async () => {
-    try {
-        await rest.put(
-            Routes.applicationGuildCommands(process.env.CLIENT_ID, process.env.GUILD_ID),
-            { body: moderation.data.map(cmd => cmd.toJSON()) },
-        );
-        console.log('✅ Komutlar başarıyla yüklendi!');
-    } catch (error) { console.error('❌ Yükleme Hatası:', error); }
-})();
+// Bot modülleri
+require("./moderation")(client);
+require("./guard")(client);
+require("./welcome")(client);
+require("./chat")(client);
+require("./antiRaid")(client);
 
-// YETKİ KONTROLÜ (Senin ID'n veya Yönetici olanlar)
-function yetkiVarMi(member) {
-    return member.id === process.env.SAHIP_ID || member.permissions.has(PermissionFlagsBits.Administrator);
-}
+// Web panel
+require("./dashboard");
 
-// OTO ROL & HOŞ GELDİN
-client.on(Events.GuildMemberAdd, async member => {
-    const rolId = process.env.OTO_ROL_ID;
-    const rol = member.guild.roles.cache.get(rolId);
-    if (rol) member.roles.add(rol).catch(e => console.log("Rol verme hatası:", e.message));
-
-    const embed = new EmbedBuilder()
-        .setColor(0x000000)
-        .setTitle(`Hoş Geldin ${member.user.username}! 🚗`)
-        .setDescription(`**${member.guild.name}** garajına hoş geldin!`);
-    
-    member.send({ embeds: [embed] }).catch(() => {});
+client.once("ready", () => {
+    console.log(`${client.user.tag} aktif`);
 });
 
-// ETKİLEŞİMLER (BAN/KICK ÇALIŞTIRAN KISIM)
-client.on(Events.InteractionCreate, async interaction => {
-    if (interaction.isChatInputCommand()) {
-        if (!yetkiVarMi(interaction.member)) {
-            return interaction.reply({ content: "❌ Bu komutu kullanmak için yetkin yok!", ephemeral: true });
-        }
-        await moderation.execute(interaction);
-    }
+process.on("unhandledRejection", (err) => {
+    console.log("Unhandled Rejection:", err);
+});
 
-    // BAN KALDIRMA BUTONU
-    if (interaction.isButton()) {
-        if (!yetkiVarMi(interaction.member)) return;
-        const [act, uid] = interaction.customId.split('_');
-        if (act === 'unban') {
-            await interaction.guild.members.unban(uid);
-            await interaction.update({ content: `✅ Ban kaldırıldı.`, components: [] });
-        }
-    }
+process.on("uncaughtException", (err) => {
+    console.log("Uncaught Exception:", err);
 });
 
 client.login(process.env.TOKEN);
-
